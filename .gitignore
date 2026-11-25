@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment variables
+.env
+
+# Large source document files (not needed for web deployment)
+*.pptx
+*.docx
+*.pdf
+
+# OS junk
+.DS_Store
+Thumbs.db
+Desktop.ini

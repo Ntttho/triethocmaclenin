@@ -1,0 +1,73 @@
+/* Custom Styles for Quiz Web */
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.4);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.7);
+}
+
+/* Question Option Card Transitions */
+.option-btn {
+  transition: all 0.18s ease-in-out;
+  cursor: pointer;
+  user-select: none;
+}
+
+.option-btn:hover {
+  transform: translateY(-1px);
+}
+
+.option-btn.selected {
+  border-color: #dc2626 !important;
+  background-color: rgba(239, 68, 68, 0.08) !important;
+}
+
+.dark .option-btn.selected {
+  border-color: #ef4444 !important;
+  background-color: rgba(239, 68, 68, 0.18) !important;
+}
+
+/* Practice Mode feedback states */
+.option-btn.correct-state {
+  border-color: #10b981 !important;
+  background-color: rgba(16, 185, 129, 0.12) !important;
+}
+.option-btn.wrong-state {
+  border-color: #ef4444 !important;
+  background-color: rgba(239, 68, 68, 0.12) !important;
+}
+
+/* Palette button states */
+.palette-btn {
+  transition: all 0.15s ease-in-out;
+}
+.palette-btn.current {
+  ring-width: 2px;
+  --tw-ring-color: #dc2626;
+  font-weight: 800;
+}
+.palette-btn.answered {
+  background-color: #dc2626 !important;
+  color: white !important;
+  border-color: #b91c1c !important;
+}
+.palette-btn.flagged {
+  border-color: #f59e0b !important;
+  box-shadow: 0 0 0 1px #f59e0b;
+}
+
+/* Radio Card Custom selection */
+input[type="radio"]:checked + div {
+  font-weight: 700;
+}
+
