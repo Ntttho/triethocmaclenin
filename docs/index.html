@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ôn Thi Trắc Nghiệm Triết Học Mác - Lênin</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fdf4f4',
+              100: '#fbe8e8',
+              500: '#dc2626',
+              600: '#b91c1c',
+              700: '#991b1b',
+              800: '#7f1d1d'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="h-full bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100 transition-colors duration-200">
+  
+  <!-- Navigation Header -->
+  <header class="sticky top-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur border-b border-slate-200 dark:border-slate-800 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="navigateTab('home')">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-red-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-red-500/20">
+          <i class="fa-solid fa-graduation-cap text-lg"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-base sm:text-lg text-slate-900 dark:text-white leading-tight">
+            Triết Học Mác - Lênin
+          </h1>
+          <p class="text-xs text-red-600 dark:text-red-400 font-semibold flex items-center gap-1">
+            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Hệ Thống Ôn Thi Cuối Kỳ • 150 Câu
+          </p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="hidden md:flex items-center space-x-1">
+        <button id="nav-btn-home" onclick="navigateTab('home')" class="nav-tab px-3 py-2 rounded-lg text-sm font-medium transition text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40">
+          <i class="fa-solid fa-play mr-1.5"></i>Làm bài thi
+        </button>
+        <button id="nav-btn-bank" onclick="navigateTab('bank')" class="nav-tab px-3 py-2 rounded-lg text-sm font-medium transition text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+          <i class="fa-solid fa-book-open mr-1.5"></i>Ngân hàng 150 câu
+        </button>
+        <button id="nav-btn-history" onclick="navigateTab('history')" class="nav-tab px-3 py-2 rounded-lg text-sm font-medium transition text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+          <i class="fa-solid fa-clock-rotate-left mr-1.5"></i>Lịch sử làm bài
+        </button>
+      </nav>
+
+      <!-- Right controls: Theme toggle & Mobile menu -->
+      <div class="flex items-center space-x-2">
+        <button id="theme-toggle" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:scale-105 transition">
+          <i class="fa-solid fa-moon dark:hidden text-slate-700"></i>
+          <i class="fa-solid fa-sun hidden dark:inline text-amber-400"></i>
+        </button>
+        <!-- Mobile tab trigger -->
+        <div class="md:hidden flex space-x-1">
+          <button onclick="navigateTab('bank')" class="p-2 text-slate-600 dark:text-slate-300" title="Ngân hàng câu hỏi">
+            <i class="fa-solid fa-book-open"></i>
+          </button>
+          <button onclick="navigateTab('history')" class="p-2 text-slate-600 dark:text-slate-300" title="Lịch sử">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main View Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ================= 1. TAB HOME (SETUP QUIZ) ================= -->
+    <section id="view-home" class="space-y-6">
+      <!-- Welcome Hero Banner -->
+      <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-red-700 via-rose-700 to-amber-700 text-white p-6 sm:p-10 shadow-xl shadow-red-900/10">
+        <div class="relative z-10 max-w-2xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur text-xs font-semibold tracking-wide uppercase mb-3">
+            <i class="fa-solid fa-fire text-amber-300"></i> Sẵn sàng cho kỳ thi cuối kỳ
+          </div>
+          <h2 class="text-2xl sm:text-4xl font-extrabold tracking-tight mb-3">
+            Luyện Thi Trắc Nghiệm <br class="hidden sm:inline">Triết Học Mác - Lênin
+          </h2>
+          <p class="text-red-100 text-sm sm:text-base leading-relaxed mb-6">
+            Dữ liệu chuẩn 100% từ 2 bộ đề <strong>ONTAP1.pdf</strong> (100 câu) & <strong>ONTAP2.pdf</strong> (50 câu). Cơ chế tự động <strong>trộn ngẫu nhiên câu hỏi & 4 đáp án A-B-C-D</strong> giúp ôn luyện bản chất, nhớ lâu, tự tin đạt điểm cao!
+          </p>
+          <div class="flex flex-wrap gap-4 text-xs sm:text-sm font-medium">
+            <div class="flex items-center gap-2 bg-black/20 rounded-lg px-3 py-1.5">
+              <i class="fa-solid fa-database text-amber-300"></i> MySQL Database 8.0
+            </div>
+            <div class="flex items-center gap-2 bg-black/20 rounded-lg px-3 py-1.5">
+              <i class="fa-solid fa-shuffle text-emerald-300"></i> Random 2 Chiều
+            </div>
+            <div class="flex items-center gap-2 bg-black/20 rounded-lg px-3 py-1.5">
+              <i class="fa-solid fa-bolt text-yellow-300"></i> Chấm điểm tức thì
+            </div>
+          </div>
+        </div>
+        <div class="absolute -right-10 -bottom-10 opacity-10 text-white pointer-events-none text-[220px]">
+          <i class="fa-solid fa-book-bookmark"></i>
+        </div>
+      </div>
+
+      <!-- Setup Card -->
+      <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-700">
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-red-600"></i> Thiết Lập Đề Thi & Chế Độ Ôn Luyện
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Topic Selection -->
+          <div class="space-y-3">
+            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+              1. Chọn nguồn đề câu hỏi:
+            </label>
+            <div class="space-y-2.5">
+              <label class="relative flex items-center p-3.5 rounded-2xl border-2 border-red-500 bg-red-50/50 dark:bg-red-950/20 dark:border-red-500 cursor-pointer transition topic-radio-label">
+                <input type="radio" name="quiz-topic" value="ALL" checked class="w-4 h-4 text-red-600 focus:ring-red-500">
+                <div class="ml-3">
+                  <span class="block text-sm font-bold text-slate-900 dark:text-white">Tổng hợp toàn bộ 150 câu</span>
+                  <span class="block text-xs text-slate-500 dark:text-slate-400">Trộn cả ONTAP1 (100 câu) & ONTAP2 (50 câu)</span>
+                </div>
+                <span class="ml-auto text-xs font-bold px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200">150 câu</span>
+              </label>
+
+              <label class="relative flex items-center p-3.5 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 cursor-pointer transition topic-radio-label">
+                <input type="radio" name="quiz-topic" value="ONTAP1" class="w-4 h-4 text-red-600 focus:ring-red-500">
+                <div class="ml-3">
+                  <span class="block text-sm font-bold text-slate-900 dark:text-white">Bộ đề 1: Trọng tâm lý thuyết</span>
+                  <span class="block text-xs text-slate-500 dark:text-slate-400">Từ file ONTAP1.pdf (Các nguyên lý, quy luật, phạm trù)</span>
+                </div>
+                <span class="ml-auto text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300">100 câu</span>
+              </label>
+
+              <label class="relative flex items-center p-3.5 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 cursor-pointer transition topic-radio-label">
+                <input type="radio" name="quiz-topic" value="ONTAP2" class="w-4 h-4 text-red-600 focus:ring-red-500">
+                <div class="ml-3">
+                  <span class="block text-sm font-bold text-slate-900 dark:text-white">Bộ đề 2: Vận dụng & Thực tiễn</span>
+                  <span class="block text-xs text-slate-500 dark:text-slate-400">Từ file ONTAP2.pdf (Câu hỏi liên hệ AI, chuyển đổi số, chính sách)</span>
+                </div>
+                <span class="ml-auto text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300">50 câu</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Mode & Question Count Selection -->
+          <div class="space-y-6">
+            <!-- Mode Selection -->
+            <div class="space-y-3">
+              <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                2. Chế độ luyện tập:
+              </label>
+              <div class="grid grid-cols-2 gap-3">
+                <label class="flex flex-col p-4 rounded-2xl border-2 border-red-500 bg-red-50/50 dark:bg-red-950/20 cursor-pointer mode-radio-label">
+                  <div class="flex items-center justify-between mb-2">
+                    <i class="fa-solid fa-graduation-cap text-red-600 text-xl"></i>
+                    <input type="radio" name="quiz-mode" value="practice" checked class="w-4 h-4 text-red-600 focus:ring-red-500">
+                  </div>
+                  <span class="font-bold text-sm text-slate-900 dark:text-white">Luyện Tập Tự Do</span>
+                  <span class="text-xs text-slate-500 dark:text-slate-400 mt-1">Biết đáp án đúng/sai ngay khi chọn. Không giới hạn thời gian.</span>
+                </label>
+
+                <label class="flex flex-col p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 cursor-pointer mode-radio-label">
+                  <div class="flex items-center justify-between mb-2">
+                    <i class="fa-solid fa-stopwatch text-amber-500 text-xl"></i>
+                    <input type="radio" name="quiz-mode" value="exam" class="w-4 h-4 text-red-600 focus:ring-red-500">
+                  </div>
+                  <span class="font-bold text-sm text-slate-900 dark:text-white">Thi Thử Tính Giờ</span>
+                  <span class="text-xs text-slate-500 dark:text-slate-400 mt-1">Đếm ngược thời gian. Nộp bài mới hiển thị điểm & chữa bài.</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Question Count -->
+            <div class="space-y-3">
+              <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                3. Số lượng câu hỏi muốn làm:
+              </label>
+              <div class="grid grid-cols-4 gap-2">
+                <button type="button" onclick="setCount('20')" class="count-btn py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition">20 câu</button>
+                <button type="button" onclick="setCount('40')" class="count-btn py-2.5 rounded-xl border-2 border-red-500 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 font-bold text-sm transition">40 câu</button>
+                <button type="button" onclick="setCount('50')" class="count-btn py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition">50 câu</button>
+                <button type="button" onclick="setCount('all')" class="count-btn py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition">Toàn bộ</button>
+              </div>
+              <input type="hidden" id="selected-count" value="40">
+            </div>
+
+            <!-- Randomizer Toggle -->
+            <div class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                  <i class="fa-solid fa-shuffle"></i>
+                </div>
+                <div>
+                  <div class="text-sm font-bold text-slate-900 dark:text-white">Random câu hỏi & 4 đáp án A-B-C-D</div>
+                  <div class="text-xs text-slate-500 dark:text-slate-400">Xáo trộn ngẫu nhiên thứ tự từng phương án</div>
+                </div>
+              </div>
+              <input type="checkbox" id="shuffle-toggle" checked class="w-5 h-5 text-red-600 rounded focus:ring-red-500">
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Button -->
+        <div class="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-info text-blue-500"></i>
+            Kết quả của bạn sẽ được tự động lưu vào MySQL Database sau khi nộp bài.
+          </div>
+          <button id="btn-start-quiz" onclick="startQuiz()" class="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold text-base shadow-lg shadow-red-600/30 hover:scale-[1.02] active:scale-[0.98] transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-play"></i> Bắt Đầu Làm Bài Ngay
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 2. TAB QUIZ (DOING TEST) ================= -->
+    <section id="view-quiz" class="hidden space-y-6">
+      <!-- Quiz Header Sticky Bar -->
+      <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-4">
+        <!-- Left: Quit & Progress -->
+        <div class="flex items-center gap-4 flex-1 min-w-[240px]">
+          <button onclick="confirmExitQuiz()" class="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-semibold flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-arrow-left"></i> Thoát
+          </button>
+          <div class="flex-1">
+            <div class="flex justify-between text-xs font-bold mb-1.5">
+              <span id="quiz-progress-text" class="text-slate-700 dark:text-slate-200">Câu 1 / 40</span>
+              <span id="quiz-answered-text" class="text-red-600 dark:text-red-400">Đã trả lời: 0/40</span>
+            </div>
+            <div class="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+              <div id="quiz-progress-bar" class="bg-gradient-to-r from-red-500 to-amber-500 h-2 rounded-full transition-all duration-300" style="width: 2.5%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center: Timer (Only for exam mode or stopwatch) -->
+        <div id="quiz-timer-container" class="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 font-mono text-base font-bold text-slate-900 dark:text-white">
+          <i class="fa-regular fa-clock text-red-500 animate-pulse"></i>
+          <span id="quiz-timer">45:00</span>
+        </div>
+
+        <!-- Right: Submit Button -->
+        <button onclick="submitQuiz()" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md shadow-emerald-600/20 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-check"></i> Nộp Bài
+        </button>
+      </div>
+
+      <!-- Quiz Body: 2 Columns (Question Card + Palette) -->
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <!-- Question Column (3 cols) -->
+        <div class="lg:col-span-3 space-y-4">
+          <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-700">
+            <!-- Question Metadata & Bookmark -->
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-700 mb-6">
+              <div class="flex items-center gap-2">
+                <span id="q-index-badge" class="px-3 py-1 rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 font-extrabold text-xs">
+                  Câu 1
+                </span>
+                <span id="q-topic-badge" class="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-semibold">
+                  Bộ đề 1
+                </span>
+              </div>
+              <button id="q-flag-btn" onclick="toggleFlagCurrentQuestion()" class="px-3 py-1 rounded-xl text-xs font-semibold border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-amber-500 transition flex items-center gap-1.5">
+                <i class="fa-regular fa-bookmark"></i> Gắn cờ xem lại
+              </button>
+            </div>
+
+            <!-- Question Content -->
+            <div id="q-content" class="text-base sm:text-lg font-bold text-slate-900 dark:text-white leading-relaxed mb-6">
+              Nội dung câu hỏi đang tải...
+            </div>
+
+            <!-- Options Container -->
+            <div id="q-options" class="space-y-3">
+              <!-- Rendered dynamically -->
+            </div>
+
+            <!-- Practice Mode Instant Feedback Box -->
+            <div id="practice-feedback" class="hidden mt-6 p-4 rounded-2xl border text-sm transition">
+              <!-- Dynamically populated in practice mode -->
+            </div>
+
+            <!-- Navigation Buttons Prev / Next -->
+            <div class="mt-8 pt-6 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between">
+              <button id="btn-prev-q" onclick="goToPrevQuestion()" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 font-bold text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition flex items-center gap-2">
+                <i class="fa-solid fa-chevron-left text-xs"></i> Câu Trước
+              </button>
+              <div class="text-xs text-slate-400 hidden sm:block">
+                Dùng phím <kbd class="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded border">←</kbd> và <kbd class="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded border">→</kbd> để chuyển câu
+              </div>
+              <button id="btn-next-q" onclick="goToNextQuestion()" class="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm shadow-md shadow-red-600/20 transition flex items-center gap-2">
+                Câu Kế Tiếp <i class="fa-solid fa-chevron-right text-xs"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Question Palette Column (1 col) -->
+        <div class="lg:col-span-1 space-y-4">
+          <div class="bg-white dark:bg-slate-800 rounded-3xl p-5 shadow-sm border border-slate-200 dark:border-slate-700 sticky top-24">
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
+                <i class="fa-solid fa-grip text-red-600"></i> Bảng Câu Hỏi
+              </h4>
+              <span id="palette-count" class="text-xs text-slate-500 font-medium">40 câu</span>
+            </div>
+
+            <!-- Legend -->
+            <div class="flex flex-wrap gap-2 text-[11px] font-medium text-slate-500 dark:text-slate-400 mb-4 pb-3 border-b border-slate-100 dark:border-slate-700">
+              <div class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-slate-200 dark:bg-slate-700"></span> Chưa làm</div>
+              <div class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-red-500"></span> Đã chọn</div>
+              <div class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-amber-400"></span> Gắn cờ</div>
+            </div>
+
+            <!-- Grid of Question Numbers -->
+            <div id="palette-grid" class="grid grid-cols-5 gap-2 max-h-[360px] overflow-y-auto pr-1">
+              <!-- Dynamically rendered -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 3. TAB RESULT (SCORE & REVIEW) ================= -->
+    <section id="view-result" class="hidden space-y-6">
+      <!-- Result Banner Card -->
+      <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-10 shadow-sm border border-slate-200 dark:border-slate-700 text-center max-w-3xl mx-auto">
+        <div id="result-badge-icon" class="w-20 h-20 mx-auto rounded-3xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center text-4xl mb-4 shadow-lg shadow-emerald-500/20">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <h2 id="result-title" class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mb-2">
+          Hoàn Thành Bài Thi!
+        </h2>
+        <p id="result-comment" class="text-sm text-slate-500 dark:text-slate-400 mb-6">
+          Chúc mừng bạn đã nỗ lực ôn tập môn Triết học Mác - Lênin.
+        </p>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 my-6">
+          <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700">
+            <span class="block text-xs font-semibold text-slate-500 dark:text-slate-400">Điểm Số (Thang 10)</span>
+            <span id="res-score" class="text-2xl sm:text-3xl font-black text-red-600 dark:text-red-400">9.50</span>
+          </div>
+          <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700">
+            <span class="block text-xs font-semibold text-slate-500 dark:text-slate-400">Số Câu Đúng</span>
+            <span id="res-correct" class="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400">38/40</span>
+          </div>
+          <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700">
+            <span class="block text-xs font-semibold text-slate-500 dark:text-slate-400">Tỷ Lệ Chính Xác</span>
+            <span id="res-percent" class="text-2xl sm:text-3xl font-black text-blue-600 dark:text-blue-400">95%</span>
+          </div>
+          <div class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700">
+            <span class="block text-xs font-semibold text-slate-500 dark:text-slate-400">Thời Gian Làm</span>
+            <span id="res-time" class="text-2xl sm:text-3xl font-black text-amber-500">24:15</span>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex flex-wrap items-center justify-center gap-3 pt-4">
+          <button onclick="startQuiz()" class="px-6 py-3 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm shadow-md shadow-red-600/20 transition flex items-center gap-2">
+            <i class="fa-solid fa-rotate-right"></i> Làm Lại Đề Khác (Random Mới)
+          </button>
+          <button id="btn-filter-wrong" onclick="filterReview('wrong')" class="px-5 py-3 rounded-2xl bg-rose-100 hover:bg-rose-200 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 font-bold text-sm transition flex items-center gap-2">
+            <i class="fa-solid fa-triangle-exclamation"></i> Xem Các Câu Sai (<span id="wrong-count-badge">0</span>)
+          </button>
+          <button onclick="navigateTab('home')" class="px-5 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 font-bold text-sm transition flex items-center gap-2">
+            <i class="fa-solid fa-house"></i> Về Trang Chủ
+          </button>
+        </div>
+      </div>
+
+      <!-- Detailed Review Section -->
+      <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-700 max-w-4xl mx-auto">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-200 dark:border-slate-700">
+          <h3 class="font-extrabold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+            <i class="fa-solid fa-magnifying-glass text-red-600"></i> Bảng Chữa Bài Chi Tiết
+          </h3>
+          <!-- Filter Tabs -->
+          <div class="flex rounded-xl bg-slate-100 dark:bg-slate-900 p-1 text-xs font-bold">
+            <button onclick="filterReview('all')" id="rev-tab-all" class="px-3 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm">Tất cả</button>
+            <button onclick="filterReview('wrong')" id="rev-tab-wrong" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white">Chỉ câu sai</button>
+            <button onclick="filterReview('correct')" id="rev-tab-correct" class="px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white">Chỉ câu đúng</button>
+          </div>
+        </div>
+
+        <!-- Review Question List -->
+        <div id="review-list" class="space-y-6">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 4. TAB QUESTION BANK (150 QUESTIONS) ================= -->
+    <section id="view-bank" class="hidden space-y-6">
+      <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-700">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h3 class="text-xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+              <i class="fa-solid fa-book-open text-red-600"></i> Ngân Hàng 150 Câu Hỏi & Đáp Án Chuẩn
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Tra cứu nhanh câu hỏi, lý thuyết và đáp án đúng để học thuộc lòng.
+            </p>
+          </div>
+          <!-- Filter by topic -->
+          <select id="bank-topic-filter" onchange="loadQuestionBank()" class="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm font-semibold">
+            <option value="ALL">Tất cả (150 câu)</option>
+            <option value="ONTAP1">Bộ đề 1: ONTAP1 (100 câu)</option>
+            <option value="ONTAP2">Bộ đề 2: ONTAP2 (50 câu)</option>
+          </select>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="relative mb-6">
+          <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400"></i>
+          <input type="text" id="bank-search-input" oninput="debounceBankSearch()" placeholder="Nhập từ khóa cần tìm (VD: thực tiễn, vật chất, siêu hình, AI, lực lượng sản xuất)..." class="w-full pl-11 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
+        </div>
+
+        <!-- Bank Questions List -->
+        <div id="bank-list" class="space-y-4">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 5. TAB HISTORY ================= -->
+    <section id="view-history" class="hidden space-y-6">
+      <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200 dark:border-slate-700">
+        <h3 class="text-xl font-extrabold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+          <i class="fa-solid fa-clock-rotate-left text-red-600"></i> Lịch Sử Các Lần Luyện Thi (MySQL)
+        </h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mb-6">
+          Lưu trữ trực tiếp trong bảng <code>quiz_attempts</code> của CSDL MySQL để bạn theo dõi tiến bộ.
+        </p>
+
+        <!-- History Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="text-xs uppercase bg-slate-50 dark:bg-slate-900 text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
+              <tr>
+                <th class="px-4 py-3">Mã lượt thi</th>
+                <th class="px-4 py-3">Chế độ</th>
+                <th class="px-4 py-3">Bộ đề</th>
+                <th class="px-4 py-3">Số câu đúng</th>
+                <th class="px-4 py-3">Điểm số</th>
+                <th class="px-4 py-3">Thời gian</th>
+                <th class="px-4 py-3">Ngày làm</th>
+              </tr>
+            </thead>
+            <tbody id="history-tbody" class="divide-y divide-slate-100 dark:divide-slate-700">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
+

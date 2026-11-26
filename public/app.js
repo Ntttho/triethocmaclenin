@@ -1,4 +1,5 @@
 // Triet Hoc Mac - Lenin Quiz Web Application Logic
+// Dual-Mode: Fullstack Node.js/MySQL with Auto-Fallback to Static JSON for GitHub Pages
 
 let appState = {
   currentTab: 'home',
@@ -18,6 +19,33 @@ let appState = {
   currentReviewFilter: 'all'
 };
 
+// ----------------- STATIC FALLBACK HELPERS -----------------
+let staticQuestionsCache = null;
+
+async function fetchStaticQuestions() {
+  if (staticQuestionsCache) return staticQuestionsCache;
+  const possiblePaths = ['data/questions.json', './data/questions.json', '../data/questions.json'];
+  for (const p of possiblePaths) {
+    try {
+      const res = await fetch(p);
+      if (res.ok) {
+        staticQuestionsCache = await res.json();
+        return staticQuestionsCache;
+      }
+    } catch (e) {}
+  }
+  return [];
+}
+
+function shuffleArray(arr) {
+  const array = [...arr];
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
 // ----------------- THEME INITIALIZATION -----------------
 function initTheme() {
   const themeToggle = document.getElementById('theme-toggle');
@@ -30,11 +58,13 @@ function initTheme() {
     document.documentElement.classList.remove('dark');
   }
 
-  themeToggle.addEventListener('click', () => {
-    document.documentElement.classList.toggle('dark');
-    const newDark = document.documentElement.classList.contains('dark');
-    localStorage.setItem('theme', newDark ? 'dark' : 'light');
-  });
+  if (themeToggle) {
+    themeToggle.addEventListener('click', () => {
+      document.documentElement.classList.toggle('dark');
+      const newDark = document.documentElement.classList.contains('dark');
+      localStorage.setItem('theme', newDark ? 'dark' : 'light');
+    });
+  }
 }
 
 // ----------------- NAVIGATION -----------------
@@ -51,7 +81,6 @@ function navigateTab(tabName) {
     }
   });
 
-  // Update header buttons styling
   document.querySelectorAll('.nav-tab').forEach(btn => {
     btn.classList.remove('text-red-600', 'dark:text-red-400', 'bg-red-50', 'dark:bg-red-950/40');
     btn.classList.add('text-slate-600', 'dark:text-slate-400');
@@ -76,11 +105,12 @@ function setCount(val) {
     btn.classList.remove('border-2', 'border-red-500', 'bg-red-50', 'dark:bg-red-950/40', 'text-red-600', 'dark:text-red-400');
     btn.classList.add('border-slate-200', 'dark:border-slate-700');
   });
-  event.target.classList.add('border-2', 'border-red-500', 'bg-red-50', 'dark:bg-red-950/40', 'text-red-600', 'dark:text-red-400');
-  event.target.classList.remove('border-slate-200', 'dark:border-slate-700');
+  if (window.event && window.event.target) {
+    window.event.target.classList.add('border-2', 'border-red-500', 'bg-red-50', 'dark:bg-red-950/40', 'text-red-600', 'dark:text-red-400');
+    window.event.target.classList.remove('border-slate-200', 'dark:border-slate-700');
+  }
 }
 
-// Handle radio borders on topic selection
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
 
@@ -106,7 +136,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Keyboard navigation shortcuts
   window.addEventListener('keydown', (e) => {
     if (appState.currentTab !== 'quiz') return;
     if (e.key === 'ArrowLeft') {
@@ -123,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// ----------------- START QUIZ -----------------
+// ----------------- START QUIZ (API + STATIC FALLBACK) -----------------
 async function startQuiz() {
   const topic = document.querySelector('input[name="quiz-topic"]:checked').value;
   const mode = document.querySelector('input[name="quiz-mode"]:checked').value;
@@ -135,40 +164,93 @@ async function startQuiz() {
   btnStart.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang tải câu hỏi...`;
 
   try {
-    const url = `/api/quiz?topic=${topic}&count=${count}&mode=${mode}&shuffle=${shuffle}`;
-    const res = await fetch(url);
-    const data = await res.json();
+    let questions = [];
 
-    if (!data.success || !data.questions.length) {
-      alert('Không tìm thấy câu hỏi phù hợp. Vui lòng thử lại!');
+    // 1. Thử gọi API Backend trước
+    try {
+      const url = `/api/quiz?topic=${topic}&count=${count}&mode=${mode}&shuffle=${shuffle}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.questions && data.questions.length > 0) {
+          questions = data.questions;
+        }
+      }
+    } catch (apiErr) {
+      // Backend không phản hồi (ví dụ chạy trên GitHub Pages tĩnh)
+    }
+
+    // 2. Nếu không có API (GitHub Pages), tự động dùng static JSON fallback
+    if (!questions || questions.length === 0) {
+      const rawData = await fetchStaticQuestions();
+      if (rawData && rawData.length > 0) {
+        let pool = [...rawData];
+        if (topic === 'ONTAP1') pool = pool.filter(q => q.part_id === 1);
+        if (topic === 'ONTAP2') pool = pool.filter(q => q.part_id === 2);
+        if (shuffle) pool = shuffleArray(pool);
+        if (count !== 'all') {
+          const limit = parseInt(count, 10);
+          if (!isNaN(limit)) pool = pool.slice(0, limit);
+        }
+
+        const displayLabels = ['A', 'B', 'C', 'D', 'E'];
+        questions = pool.map((q, idx) => {
+          let opts = q.options.map((opt) => ({
+            id: `${q.part_id}_${q.num}_${opt.label}`,
+            label: opt.label,
+            content: opt.text,
+            isCorrect: opt.label.toUpperCase() === (q.correct_answer || '').toUpperCase()
+          }));
+
+          if (shuffle) opts = shuffleArray(opts);
+
+          opts = opts.map((opt, oIdx) => ({
+            ...opt,
+            displayLabel: displayLabels[oIdx] || opt.label,
+            // Giấu cờ isCorrect trong chế độ thi thử
+            isCorrect: mode === 'practice' ? opt.isCorrect : undefined,
+            _trueCorrect: opt.isCorrect // lưu nội bộ để chấm bài client
+          }));
+
+          return {
+            id: `${q.part_id}_${q.num}`,
+            index: idx + 1,
+            originalNum: q.num,
+            topicTitle: q.part_name || (q.part_id === 1 ? 'Bộ đề 1' : 'Bộ đề 2'),
+            content: q.question,
+            options: opts,
+            explanation: mode === 'practice' ? q.explanation : undefined,
+            _correctAnswerLetter: q.correct_answer
+          };
+        });
+      }
+    }
+
+    if (!questions || questions.length === 0) {
+      alert('Không thể tải dữ liệu câu hỏi. Vui lòng thử lại!');
       return;
     }
 
     // Reset Quiz State
-    appState.questions = data.questions;
+    appState.questions = questions;
     appState.currentIndex = 0;
     appState.userAnswers = {};
     appState.flaggedQuestions = new Set();
     appState.practiceRevealed = new Set();
     appState.mode = mode;
     appState.topic = topic;
-    appState.totalCount = data.questions.length;
+    appState.totalCount = questions.length;
     appState.timeSpentSeconds = 0;
+    appState.timeRemainingSeconds = Math.max(questions.length * 65, 15 * 60);
 
-    // Time calculation (e.g., 45 minutes for 40 questions, ~1 min/question)
-    appState.timeRemainingSeconds = Math.max(appState.questions.length * 65, 15 * 60);
-
-    // Switch view to quiz
     navigateTab('quiz');
-
-    // Setup and render
     renderPalette();
     renderCurrentQuestion();
     startTimer();
 
   } catch (err) {
     console.error('Lỗi khởi tạo đề thi:', err);
-    alert('Không thể kết nối đến máy chủ. Hãy kiểm tra kết nối!');
+    alert('Không thể tải bộ đề. Vui lòng kiểm tra lại!');
   } finally {
     btnStart.disabled = false;
     btnStart.innerHTML = `<i class="fa-solid fa-play"></i> Bắt Đầu Làm Bài Ngay`;
@@ -215,14 +297,10 @@ function renderCurrentQuestion() {
   const q = appState.questions[appState.currentIndex];
   if (!q) return;
 
-  // Header badges
   document.getElementById('q-index-badge').textContent = `Câu ${appState.currentIndex + 1} / ${appState.questions.length}`;
   document.getElementById('q-topic-badge').textContent = q.topicTitle || (q.topic_id === 1 ? 'Bộ đề 1' : 'Bộ đề 2');
-
-  // Question content
   document.getElementById('q-content').textContent = q.content;
 
-  // Flag button
   const flagBtn = document.getElementById('q-flag-btn');
   const isFlagged = appState.flaggedQuestions.has(q.id);
   if (isFlagged) {
@@ -233,7 +311,6 @@ function renderCurrentQuestion() {
     flagBtn.innerHTML = `<i class="fa-regular fa-bookmark"></i> Gắn cờ xem lại`;
   }
 
-  // Options rendering
   const optionsContainer = document.getElementById('q-options');
   optionsContainer.innerHTML = '';
 
@@ -242,14 +319,15 @@ function renderCurrentQuestion() {
 
   q.options.forEach((opt, idx) => {
     const isSelected = selectedOptId === opt.id;
+    const isCorrect = opt.isCorrect !== undefined ? opt.isCorrect : opt._trueCorrect;
     const btn = document.createElement('div');
     
     let baseClass = 'option-btn p-4 rounded-2xl border-2 font-medium flex items-start gap-3 ';
     
     if (isRevealed) {
-      if (opt.isCorrect) {
+      if (isCorrect) {
         baseClass += 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 font-bold';
-      } else if (isSelected && !opt.isCorrect) {
+      } else if (isSelected && !isCorrect) {
         baseClass += 'border-red-500 bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-200 font-bold';
       } else {
         baseClass += 'border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 opacity-60';
@@ -265,11 +343,10 @@ function renderCurrentQuestion() {
     btn.className = baseClass;
     btn.onclick = () => selectOption(opt.id);
 
-    // Option letter badge
     let badgeClass = 'w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ';
-    if (isRevealed && opt.isCorrect) {
+    if (isRevealed && isCorrect) {
       badgeClass += 'bg-emerald-500 text-white';
-    } else if (isRevealed && isSelected && !opt.isCorrect) {
+    } else if (isRevealed && isSelected && !isCorrect) {
       badgeClass += 'bg-red-500 text-white';
     } else if (isSelected) {
       badgeClass += 'bg-red-600 text-white';
@@ -279,9 +356,9 @@ function renderCurrentQuestion() {
 
     let statusIcon = '';
     if (isRevealed) {
-      if (opt.isCorrect) {
+      if (isCorrect) {
         statusIcon = '<i class="fa-solid fa-circle-check text-emerald-500 text-lg ml-auto shrink-0"></i>';
-      } else if (isSelected && !opt.isCorrect) {
+      } else if (isSelected && !isCorrect) {
         statusIcon = '<i class="fa-solid fa-circle-xmark text-red-500 text-lg ml-auto shrink-0"></i>';
       }
     }
@@ -295,11 +372,10 @@ function renderCurrentQuestion() {
     optionsContainer.appendChild(btn);
   });
 
-  // Practice mode feedback
   const feedbackBox = document.getElementById('practice-feedback');
   if (isRevealed) {
     feedbackBox.classList.remove('hidden');
-    const correctOpt = q.options.find(o => o.isCorrect);
+    const correctOpt = q.options.find(o => o.isCorrect !== undefined ? o.isCorrect : o._trueCorrect);
     const isUserRight = selectedOptId === correctOpt?.id;
 
     if (isUserRight) {
@@ -323,11 +399,9 @@ function renderCurrentQuestion() {
     feedbackBox.classList.add('hidden');
   }
 
-  // Update Prev/Next button disabled states
   document.getElementById('btn-prev-q').disabled = appState.currentIndex === 0;
   document.getElementById('btn-prev-q').classList.toggle('opacity-40', appState.currentIndex === 0);
 
-  // Update top progress text and bar
   const total = appState.questions.length;
   const current = appState.currentIndex + 1;
   const answeredCount = Object.keys(appState.userAnswers).length;
@@ -336,7 +410,6 @@ function renderCurrentQuestion() {
   document.getElementById('quiz-answered-text').textContent = `Đã trả lời: ${answeredCount}/${total}`;
   document.getElementById('quiz-progress-bar').style.width = `${(current / total) * 100}%`;
 
-  // Update active state in palette
   updatePaletteStates();
 }
 
@@ -437,7 +510,7 @@ function updatePaletteStates() {
   });
 }
 
-// ----------------- SUBMIT QUIZ -----------------
+// ----------------- SUBMIT QUIZ (API + CLIENT STATIC FALLBACK) -----------------
 async function submitQuiz(force = false) {
   const answeredCount = Object.keys(appState.userAnswers).length;
   const total = appState.questions.length;
@@ -453,12 +526,14 @@ async function submitQuiz(force = false) {
 
   clearInterval(appState.timerInterval);
 
-  // Prepare submission payload
   const answersPayload = appState.questions.map(q => ({
     questionId: q.id,
     selectedOptionId: appState.userAnswers[q.id] || null
   }));
 
+  let resultData = null;
+
+  // 1. Thử gửi lên Backend trước
   try {
     const res = await fetch('/api/quiz/submit', {
       method: 'POST',
@@ -471,21 +546,70 @@ async function submitQuiz(force = false) {
         answers: answersPayload
       })
     });
-
-    const data = await res.json();
-    if (!data.success) {
-      alert('Có lỗi xảy ra khi chấm điểm: ' + data.message);
-      return;
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success) resultData = data;
     }
+  } catch (apiErr) {}
 
-    appState.lastResult = data;
-    renderResult(data);
-    navigateTab('result');
+  // 2. Nếu không có Backend (chạy trên GitHub Pages), tự chấm điểm trên Client
+  if (!resultData) {
+    let correctCount = 0;
+    const details = appState.questions.map(q => {
+      const selectedOptId = appState.userAnswers[q.id];
+      const correctOpt = q.options.find(o => o.isCorrect !== undefined ? o.isCorrect : o._trueCorrect);
+      const isCorrect = selectedOptId && correctOpt && selectedOptId === correctOpt.id;
+      if (isCorrect) correctCount++;
 
-  } catch (err) {
-    console.error('Lỗi khi nộp bài:', err);
-    alert('Không thể gửi bài thi lên máy chủ.');
+      return {
+        questionId: q.id,
+        questionContent: q.content,
+        options: q.options.map(o => ({
+          id: o.id,
+          label: o.displayLabel || o.label,
+          content: o.content,
+          isCorrect: o.isCorrect !== undefined ? o.isCorrect : o._trueCorrect
+        })),
+        selectedOptionId: selectedOptId || null,
+        correctOptionId: correctOpt ? correctOpt.id : null,
+        isCorrect: isCorrect ? 1 : 0
+      };
+    });
+
+    const totalQuestions = appState.questions.length;
+    const score = Number(((correctCount / totalQuestions) * 10).toFixed(2));
+
+    resultData = {
+      success: true,
+      attemptId: Date.now(),
+      score,
+      correctCount,
+      totalQuestions,
+      percentage: Math.round((correctCount / totalQuestions) * 100),
+      timeSpentSeconds: appState.timeSpentSeconds,
+      details
+    };
+
+    // Lưu điểm vào LocalStorage
+    try {
+      const history = JSON.parse(localStorage.getItem('quiz_attempts') || '[]');
+      history.unshift({
+        id: resultData.attemptId,
+        mode: appState.mode,
+        topic_code: appState.topic,
+        total_questions: totalQuestions,
+        correct_answers: correctCount,
+        score,
+        time_spent_seconds: appState.timeSpentSeconds,
+        created_at: new Date().toISOString()
+      });
+      localStorage.setItem('quiz_attempts', JSON.stringify(history.slice(0, 30)));
+    } catch (e) {}
   }
+
+  appState.lastResult = resultData;
+  renderResult(resultData);
+  navigateTab('result');
 }
 
 function confirmExitQuiz() {
@@ -508,7 +632,6 @@ function renderResult(data) {
   const wrongCount = data.totalQuestions - data.correctCount;
   document.getElementById('wrong-count-badge').textContent = wrongCount;
 
-  // Title comment
   const titleEl = document.getElementById('result-title');
   const commentEl = document.getElementById('result-comment');
   const iconEl = document.getElementById('result-badge-icon');
@@ -537,7 +660,6 @@ function filterReview(filterType) {
   appState.currentReviewFilter = filterType;
   if (!appState.lastResult || !appState.lastResult.details) return;
 
-  // Update review tab buttons
   ['all', 'wrong', 'correct'].forEach(f => {
     const btn = document.getElementById(`rev-tab-${f}`);
     if (btn) {
@@ -570,7 +692,7 @@ function filterReview(filterType) {
     return;
   }
 
-  filtered.forEach((d, index) => {
+  filtered.forEach((d) => {
     const card = document.createElement('div');
     card.className = `p-5 rounded-2xl border-2 ${
       d.isCorrect 
@@ -581,7 +703,7 @@ function filterReview(filterType) {
     let optionsHtml = '';
     d.options.forEach(opt => {
       const isSelected = opt.id === d.selectedOptionId;
-      const isCorrectOpt = opt.id === d.correctOptionId;
+      const isCorrectOpt = opt.id === d.correctOptionId || opt.isCorrect;
 
       let optClass = 'p-3 rounded-xl border text-sm flex items-start gap-2.5 ';
       let badgeClass = 'w-6 h-6 rounded flex items-center justify-center font-bold text-xs shrink-0 ';
@@ -634,21 +756,51 @@ function debounceBankSearch() {
 
 async function loadQuestionBank() {
   const topic = document.getElementById('bank-topic-filter').value;
-  const search = document.getElementById('bank-search-input').value;
+  const search = (document.getElementById('bank-search-input').value || '').trim().toLowerCase();
   const listContainer = document.getElementById('bank-list');
 
   listContainer.innerHTML = `
     <div class="text-center py-10 text-slate-400">
       <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i>
-      <p>Đang tải dữ liệu từ MySQL...</p>
+      <p>Đang tải dữ liệu câu hỏi...</p>
     </div>
   `;
 
   try {
-    const res = await fetch(`/api/questions/bank?topic=${topic}&search=${encodeURIComponent(search)}`);
-    const data = await res.json();
+    let questions = [];
 
-    if (!data.success || data.questions.length === 0) {
+    // 1. Thử gọi API
+    try {
+      const res = await fetch(`/api/questions/bank?topic=${topic}&search=${encodeURIComponent(search)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.questions) questions = data.questions;
+      }
+    } catch (e) {}
+
+    // 2. Fallback static JSON
+    if (questions.length === 0) {
+      const raw = await fetchStaticQuestions();
+      let pool = raw;
+      if (topic === 'ONTAP1') pool = pool.filter(q => q.part_id === 1);
+      if (topic === 'ONTAP2') pool = pool.filter(q => q.part_id === 2);
+      if (search) {
+        pool = pool.filter(q => q.question.toLowerCase().includes(search) || q.options.some(o => o.text.toLowerCase().includes(search)));
+      }
+      questions = pool.map(q => ({
+        id: q.num,
+        q_num: q.num,
+        content: q.question,
+        topic_title: q.part_name,
+        options: q.options.map(o => ({
+          label: o.label,
+          content: o.text,
+          is_correct: o.label.toUpperCase() === (q.correct_answer || '').toUpperCase()
+        }))
+      }));
+    }
+
+    if (questions.length === 0) {
       listContainer.innerHTML = `
         <div class="text-center py-12 text-slate-400">
           <i class="fa-solid fa-magnifying-glass text-3xl mb-2"></i>
@@ -659,7 +811,7 @@ async function loadQuestionBank() {
     }
 
     listContainer.innerHTML = '';
-    data.questions.forEach((q, idx) => {
+    questions.forEach((q) => {
       const card = document.createElement('div');
       card.className = 'p-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/40 hover:border-slate-300 dark:hover:border-slate-600 transition';
 
@@ -703,7 +855,7 @@ async function loadQuestionBank() {
   }
 }
 
-// ----------------- HISTORY (MYSQL LOGS) -----------------
+// ----------------- HISTORY (MYSQL OR LOCALSTORAGE) -----------------
 async function loadHistory() {
   const tbody = document.getElementById('history-tbody');
   tbody.innerHTML = `
@@ -715,10 +867,25 @@ async function loadHistory() {
   `;
 
   try {
-    const res = await fetch('/api/attempts');
-    const data = await res.json();
+    let attempts = [];
 
-    if (!data.success || data.attempts.length === 0) {
+    // 1. Thử lấy từ Backend MySQL
+    try {
+      const res = await fetch('/api/attempts');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.attempts) attempts = data.attempts;
+      }
+    } catch (e) {}
+
+    // 2. Nếu không có Backend, lấy từ LocalStorage
+    if (attempts.length === 0) {
+      try {
+        attempts = JSON.parse(localStorage.getItem('quiz_attempts') || '[]');
+      } catch (e) {}
+    }
+
+    if (attempts.length === 0) {
       tbody.innerHTML = `
         <tr>
           <td colspan="7" class="text-center py-8 text-slate-400">
@@ -730,7 +897,7 @@ async function loadHistory() {
     }
 
     tbody.innerHTML = '';
-    data.attempts.forEach(item => {
+    attempts.forEach(item => {
       const row = document.createElement('tr');
       row.className = 'hover:bg-slate-50 dark:hover:bg-slate-800/50 transition';
 
@@ -761,4 +928,3 @@ async function loadHistory() {
     tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-red-500">Lỗi khi tải lịch sử.</td></tr>`;
   }
 }
-
